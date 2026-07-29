@@ -1,3 +1,11 @@
+## Hint
+
+Please change branch to [Bunker-DVI-Dataset-reg-1](https://github.com/MapsHD/benchmark-SR-LIO-to-HDMapping/tree/Bunker-DVI-Dataset-reg-1) for quick experiment.
+
+## Example Dataset:
+
+Download the dataset from [Bunker DVI Dataset](https://charleshamesse.github.io/bunker-dvi-dataset/)
+
 # benchmark-SR-LIO-to-HDMapping
 
 Runs the [SR-LIO](https://github.com/ZikangYuan/sr_lio) LiDAR-Inertial odometry
