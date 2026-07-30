@@ -63,9 +63,11 @@ WORKDIR /ros_ws
 COPY ./src/sr_lio             ./src/sr_lio
 COPY ./src/srlio-to-hdmapping ./src/srlio-to-hdmapping
 
-# Benchmark launch (selectable config, no velodyne conversion node) added into
-# the sr_lio package. SR-LIO writes debug output to /tmp/sr_lio_output.
+# Benchmark launch (selectable config, no velodyne conversion node) and extra
+# configs (e.g. bunker = Livox Mid-360 as PointCloud2) added into the sr_lio
+# package. SR-LIO writes debug output to /tmp/sr_lio_output.
 COPY ./overlay/launch/ ./src/sr_lio/launch/
+COPY ./overlay/config/ ./src/sr_lio/config/
 RUN mkdir -p /tmp/sr_lio_output/cut_sweep /tmp/sr_lio_output/cloud_frame
 
 # SR-LIO's CMakeLists compiles with -std=c++11, but PCL 1.10 (Noetic) headers
@@ -74,6 +76,33 @@ RUN mkdir -p /tmp/sr_lio_output/cut_sweep /tmp/sr_lio_output/cloud_frame
 RUN sed -i 's/-std=c++11/-std=c++14/g; s/CMAKE_CXX_STANDARD 11/CMAKE_CXX_STANDARD 14/g' \
         src/sr_lio/CMakeLists.txt && \
     grep -q 'c++14' src/sr_lio/CMakeLists.txt
+
+# Normalize the IMU accelerometer to m/s^2 (THE root-cause fix). The Bunker DVI
+# /livox/imu stream reports linear_acceleration in units of g (~1.0 at rest);
+# SR-LIO expects m/s^2 (~9.8) and, unlike FAST-LIO, never rescales internally.
+# A g-unit stream therefore (a) inflates the init noise check by the
+# (G_norm/|acc|)^2 ~ 96x term -> "Too large noise of accelerometer measurements",
+# and (b) leaves an ~8.8 m/s^2 phantom acceleration -> the trajectory diverges /
+# spirals. Inject an auto-scaling snippet into imuHandler; the scale is decided
+# once from the first sample (|acc| < 3 => stream is in g => x 9.80665), so
+# datasets already in m/s^2 get scale 1.0 and are unaffected.
+COPY ./overlay/patches/ /ros_ws/patches/
+RUN sed -i '/Imu::Ptr msg_temp(new/r /ros_ws/patches/imu_acc_scale.inc' \
+        src/sr_lio/src/lioOptimization.cpp && \
+    grep -q 'benchmark patch: normalize accelerometer' src/sr_lio/src/lioOptimization.cpp
+
+# Init window: keep a short 0.5 s window so init completes during the brief
+# static hold at the very start of the recording (before walking). With the
+# accelerometer now in correct m/s^2 units the (G_norm/|acc|)^2 inflation is
+# gone and these gates behave normally; the modestly relaxed bounds just tolerate
+# minor hand tremor during the hold. Gravity is left as upstream (derived from
+# the mean accelerometer) so it correctly captures the ~15 deg IMU mount tilt.
+RUN sed -i \
+        -e 's/#define MIN_INI_TIME .*/#define MIN_INI_TIME 0.5/' \
+        -e 's/#define MAX_ACC_VAR .*/#define MAX_ACC_VAR 1.0/' \
+        -e 's/#define MAX_GYR_VAR .*/#define MAX_GYR_VAR 1.0/' \
+        src/sr_lio/include/utility.h && \
+    grep -q 'MIN_INI_TIME 0.5' src/sr_lio/include/utility.h
 
 # Build SR-LIO (lio_optimization) and the converter. The final guard fails the
 # image build loudly if either executable is missing.

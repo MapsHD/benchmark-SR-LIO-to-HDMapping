@@ -22,7 +22,7 @@ ODOM_TOPIC="${ODOM_TOPIC:-/Odometry_after_opt}"
 CLOUD_TOPIC="${CLOUD_TOPIC:-/cloud_global_map}"
 
 # Dataset/sensor config to load (config/<name>.yaml in the sr_lio package).
-# utbm | nclt | robosense | ulhk_1 | ulhk_2 | kaist
+# utbm | nclt | robosense | ulhk_1 | ulhk_2 | kaist | bunker (Livox Mid-360 as PointCloud2, e.g. Bunker DVI)
 SENSOR="${SENSOR:-utbm}"
 
 # RViz on by default — the live view of how SR-LIO tracks the dataset.
@@ -40,7 +40,7 @@ usage() {
   echo "If no arguments are provided, a GUI file selector will be used."
   echo
   echo "Environment variables:"
-  echo "  SENSOR        - SR-LIO dataset config: utbm|nclt|robosense|ulhk_1|ulhk_2|kaist (default: utbm)"
+  echo "  SENSOR        - SR-LIO dataset config: utbm|nclt|robosense|ulhk_1|ulhk_2|kaist|bunker (default: utbm)"
   echo "  LIDAR_TOPIC   - LiDAR topic name inside the bag (default: the config's topic)"
   echo "  IMU_TOPIC     - IMU topic name inside the bag   (default: the config's topic)"
   echo "  ODOM_TOPIC    - SR-LIO odometry output topic    (default: /Odometry_after_opt)"
@@ -93,8 +93,9 @@ case "$SENSOR" in
   ulhk_1)    CONFIG_FILE="ulhk_1.yaml";      CFG_LIDAR="/velodyne_points_0";  CFG_IMU="/imu/data" ;;
   ulhk_2)    CONFIG_FILE="ulhk_2.yaml";      CFG_LIDAR="/velodyne_points";    CFG_IMU="/imu/data" ;;
   kaist)     CONFIG_FILE="kaist/urban06.yaml"; CFG_LIDAR="/velodyne_points";  CFG_IMU="/imu/data_raw" ;;
+  bunker)    CONFIG_FILE="bunker.yaml";      CFG_LIDAR="/livox/pointcloud";  CFG_IMU="/livox/imu" ;;
   *)
-    echo "Error: unknown SENSOR=$SENSOR (use utbm|nclt|robosense|ulhk_1|ulhk_2|kaist)"
+    echo "Error: unknown SENSOR=$SENSOR (use utbm|nclt|robosense|ulhk_1|ulhk_2|kaist|bunker)"
     exit 1
     ;;
 esac
