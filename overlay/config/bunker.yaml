@@ -1,0 +1,65 @@
+common:
+    # Bunker DVI dataset (reg-1): Livox Mid-360 exported as sensor_msgs/PointCloud2
+    # (fields x, y, z, intensity, tag, line, time[s]) on /livox/pointcloud.
+    lidar_topic:  "/livox/pointcloud"
+    imu_topic:  "/livox/imu"
+    point_filter_num: 4
+    sweep_cut_num: 3          # finer continuous-time segmentation (upstream default)
+    time_sync_en: false
+    gravity_acc: [ 0.0, 0.0, 9.81]
+
+lidar_parameter:
+    # lidar_type 2 (VELODYNE handler) is reused on purpose: with the per-point
+    # "time" field populated (>0) it uses x/y/z/intensity/time and ignores the
+    # absent "ring", which matches the Livox PointCloud2 layout.
+    lidar_type: 2
+    N_SCANS: 6
+    SCAN_RATE: 10
+    time_unit: 0            # Livox PointCloud2 per-point time is in SECONDS
+    blind: 0.5
+    fov_degree:    180
+    det_range:     100.0
+
+imu_parameter:
+    acc_cov: 0.01
+    gyr_cov: 0.01
+    b_acc_cov: 0.0001
+    b_gyr_cov: 0.0001
+    time_diff_enable: false
+
+extrinsic_parameter:
+    extrinsic_enable:  false
+    # Livox Mid-360 built-in IMU -> LiDAR extrinsic.
+    extrinsic_t: [ -0.011, -0.02329, 0.04412]
+    extrinsic_R: [ 1, 0, 0,
+                   0, 1, 0,
+                   0, 0, 1]
+
+odometry_options:
+    voxel_size: 0.4          # finer map downsample: keep longitudinal features
+                             # (door frames, junctions) that constrain forward
+                             # motion in the degenerate straight corridor
+    sample_voxel_size: 1.5
+    max_distance: 500.0
+    max_num_points_in_voxel: 20
+    init_num_frames: 20
+    min_distance_points: 0.15
+    distance_error_threshold: 100.0
+    # CONSTANT_VELOCITY deskew: IMU-based deskew was tried and drifted earlier on
+    # the straight corridor, so keep the constant-velocity model here.
+    motion_compensation: CONSTANT_VELOCITY
+    initialization: INIT_IMU
+
+icp_options:
+    size_voxel_map: 0.5      # finer map voxels -> more usable planes indoors
+    num_iters_icp: 8         # more ICP iterations to converge under fast motion
+    min_number_neighbors: 20
+    voxel_neighborhood: 1
+    max_number_neighbors: 20
+    max_dist_to_plane_icp: 0.3
+    threshold_orientation_norm: 0.1
+    threshold_translation_norm: 0.01
+    debug_print: false
+    num_closest_neighbors: 1
+    min_num_residuals: 300
+    max_num_residuals: 1000

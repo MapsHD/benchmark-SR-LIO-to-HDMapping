@@ -139,6 +139,7 @@ docker run -it --rm \
   -e ODOM_TOPIC="$ODOM_TOPIC" \
   -e CLOUD_TOPIC="$CLOUD_TOPIC" \
   -e INPUT_IS_DIR="$INPUT_IS_DIR" \
+  -e PLAY_RATE="${PLAY_RATE:-1.0}" \
   -u 1000:1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v "$DATASET_HOST_PATH":"$DATASET_CONTAINER_PATH":ro \
@@ -213,7 +214,7 @@ echo "[record] exit"
 source /opt/ros/noetic/setup.bash
 source /ros_ws/devel/setup.bash
 echo "[play] start"
-rosbag play --clock $ROS1_BAG $REMAP_ARGS; tmux wait-for -S BAG_DONE;
+rosbag play --clock --rate ${PLAY_RATE:-1.0} $ROS1_BAG $REMAP_ARGS; tmux wait-for -S BAG_DONE;
 echo "[play] done"
 '\'' C-m
 
