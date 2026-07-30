@@ -23,7 +23,7 @@ CLOUD_TOPIC="${CLOUD_TOPIC:-/cloud_global_map}"
 
 # Dataset/sensor config to load (config/<name>.yaml in the sr_lio package).
 # utbm | nclt | robosense | ulhk_1 | ulhk_2 | kaist | bunker (Livox Mid-360 as PointCloud2, e.g. Bunker DVI)
-SENSOR="${SENSOR:-utbm}"
+SENSOR="${SENSOR:-bunker}"
 
 # RViz on by default — the live view of how SR-LIO tracks the dataset.
 USE_RVIZ="${USE_RVIZ:-1}"

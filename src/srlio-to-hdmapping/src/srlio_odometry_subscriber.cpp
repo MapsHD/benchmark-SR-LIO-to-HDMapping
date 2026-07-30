@@ -309,7 +309,12 @@ int main(int argc, char **argv)
     }
 
     std::cout << "remaining points: " << chunk.size() << std::endl;
-    if (chunk.size() > 1000000)
+    // Keep ANY non-empty trailing chunk. SR-LIO's /cloud_global_map is its
+    // sparse downsampled map (~10^5 points total for a whole session), so the
+    // single trailing chunk is far below the old 1e6 threshold that assumed
+    // dense per-scan clouds -- dropping it left chunks_pc empty and produced an
+    // empty session ("No trajectory elements matched any chunk").
+    if (!chunk.empty())
     {
         chunks_pc.push_back(chunk);
     }
