@@ -1,0 +1,6 @@
+[submodule "src/sr_lio"]
+	path = src/sr_lio
+	url = https://github.com/ZikangYuan/sr_lio.git
+[submodule "src/srlio-to-hdmapping/src/3rdparty/LASzip"]
+	path = src/srlio-to-hdmapping/src/3rdparty/LASzip
+	url = https://github.com/LASzip/LASzip.git

@@ -1,0 +1,20 @@
+<launch>
+	<!-- Benchmark launch for SR-LIO: loads a selectable config and runs the
+	     lio_optimization node (+ optional RViz). Unlike the upstream per-dataset
+	     launch files it does NOT spawn a velodyne_pointcloud conversion node —
+	     the benchmark input is an already-decoded sensor_msgs/PointCloud2. -->
+
+	<arg name="rviz" default="true" />
+	<arg name="config_file" default="utbm.yaml" />
+
+	<rosparam command="load" file="$(find sr_lio)/config/$(arg config_file)" />
+
+	<param name="debug_output" type="bool" value="0"/>
+	<param name="output_path" type="string" value="/tmp/sr_lio_output"/>
+	<node pkg="sr_lio" type="lio_optimization" name="lio_optimization" output="screen" />
+
+	<group if="$(arg rviz)">
+		<node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find sr_lio)/rviz_cfg/visualization.rviz" />
+	</group>
+
+</launch>
