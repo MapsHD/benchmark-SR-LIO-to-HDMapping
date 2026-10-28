@@ -23,7 +23,8 @@ CLOUD_TOPIC="${CLOUD_TOPIC:-/cloud_global_map}"
 
 # Dataset/sensor config to load (config/<name>.yaml in the sr_lio package).
 # utbm | nclt | robosense | ulhk_1 | ulhk_2 | kaist | bunker (Livox Mid-360 as PointCloud2, e.g. Bunker DVI)
-SENSOR="${SENSOR:-bunker}"
+# | canonical (the benchmark's canonical spinning-lidar bag, default on this branch)
+SENSOR="${SENSOR:-canonical}"
 
 # RViz on by default — the live view of how SR-LIO tracks the dataset.
 USE_RVIZ="${USE_RVIZ:-1}"
@@ -40,7 +41,7 @@ usage() {
   echo "If no arguments are provided, a GUI file selector will be used."
   echo
   echo "Environment variables:"
-  echo "  SENSOR        - SR-LIO dataset config: utbm|nclt|robosense|ulhk_1|ulhk_2|kaist|bunker (default: utbm)"
+  echo "  SENSOR        - SR-LIO dataset config: utbm|nclt|robosense|ulhk_1|ulhk_2|kaist|bunker|canonical (default: canonical)"
   echo "  LIDAR_TOPIC   - LiDAR topic name inside the bag (default: the config's topic)"
   echo "  IMU_TOPIC     - IMU topic name inside the bag   (default: the config's topic)"
   echo "  ODOM_TOPIC    - SR-LIO odometry output topic    (default: /Odometry_after_opt)"
@@ -94,8 +95,9 @@ case "$SENSOR" in
   ulhk_2)    CONFIG_FILE="ulhk_2.yaml";      CFG_LIDAR="/velodyne_points";    CFG_IMU="/imu/data" ;;
   kaist)     CONFIG_FILE="kaist/urban06.yaml"; CFG_LIDAR="/velodyne_points";  CFG_IMU="/imu/data_raw" ;;
   bunker)    CONFIG_FILE="bunker.yaml";      CFG_LIDAR="/livox/pointcloud";  CFG_IMU="/livox/imu" ;;
+  canonical) CONFIG_FILE="canonical.yaml";   CFG_LIDAR="/lidar/pointcloud";  CFG_IMU="/lidar/imu" ;;
   *)
-    echo "Error: unknown SENSOR=$SENSOR (use utbm|nclt|robosense|ulhk_1|ulhk_2|kaist|bunker)"
+    echo "Error: unknown SENSOR=$SENSOR (use utbm|nclt|robosense|ulhk_1|ulhk_2|kaist|bunker|canonical)"
     exit 1
     ;;
 esac
@@ -128,6 +130,7 @@ docker run -it --rm \
   --network host \
   -e DISPLAY=$DISPLAY \
   -e ROS_HOME=/tmp/.ros \
+  -e DISABLE_ROS1_EOL_WARNINGS=1 \
   -e SENSOR="$SENSOR" \
   -e USE_RVIZ="$USE_RVIZ" \
   -e LIBGL_ALWAYS_SOFTWARE="$LIBGL_ENV" \
@@ -291,6 +294,7 @@ docker run -it --rm \
   --network host \
   -e DISPLAY="$DISPLAY" \
   -e ROS_HOME=/tmp/.ros \
+  -e DISABLE_ROS1_EOL_WARNINGS=1 \
   -u 1000:1000 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v "$BAG_OUTPUT_HOST":"$BAG_OUTPUT_CONTAINER" \
